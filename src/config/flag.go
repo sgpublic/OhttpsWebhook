@@ -40,6 +40,7 @@ func _SetupConfig() {
 
 	if _Debug {
 		log.SetLevel(log.DebugLevel)
+		log.Debug("Enable debug mode!")
 	} else {
 		log.SetLevel(log.InfoLevel)
 	}
@@ -92,6 +93,7 @@ func GetServiceTarget() (string, string) {
 func GetTarget(domain string) (Target, error) {
 	conf := _ReadConfig()
 	for _, target := range conf.Targets {
+		log.Debugf("target.Domain: %s", target.Domain)
 		if target.Domain == domain {
 			return target, nil
 		}

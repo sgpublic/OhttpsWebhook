@@ -105,10 +105,8 @@ func NewLocalHook(w io.Writer, debug bool) *LocalHook {
 		lock: new(sync.Mutex),
 	}
 	hook.SetFormatter(LogFormat{EnableColor: false})
-	hook.levels = _GetLogLevel(debug)
-
+	hook.levels = append(hook.levels, _GetLogLevel(debug)...)
 	hook.SetWriter(w)
-
 	return hook
 }
 
@@ -123,7 +121,8 @@ func _GetLogLevel(debug bool) []logrus.Level {
 	} else {
 		return []logrus.Level{
 			logrus.InfoLevel, logrus.WarnLevel,
-			logrus.ErrorLevel, logrus.FatalLevel, logrus.PanicLevel,
+			logrus.ErrorLevel, logrus.FatalLevel,
+			logrus.PanicLevel,
 		}
 	}
 }

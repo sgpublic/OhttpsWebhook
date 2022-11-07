@@ -10,12 +10,16 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"os/exec"
 	"strconv"
 )
 
-func DoWebhook(path string, port int) {
+func Setup() {
+	path, listen := config.GetServiceTarget()
+
 	http.HandleFunc(path, _HandleWebhook)
-	err := http.ListenAndServe(":"+strconv.Itoa(port), nil)
+	log.Infof("Start listen on http://%s%s", listen, path)
+	err := http.ListenAndServe(listen, nil)
 	if err != nil {
 		log.Fatalf("Service start failed: %v", err)
 	}
@@ -75,98 +79,87 @@ func _Process(data Ohttps) {
 		return
 	}
 
-	CertKey, err := os.OpenFile(target.CertKey, os.O_RDWR, 0311)
-	if err != nil && os.IsNotExist(err) {
-		log.Warningf("Target CertKey not found, create new one...")
-		CertKey, err = os.Create(target.CertKey)
-		if err != nil {
-			log.Warningf("CertKey create failed: %v", err)
-			return
-		}
-	} else {
-		log.Infof("Backing up old CertKey...")
-		backup, err := os.OpenFile(target.CertKey+".bak", os.O_WRONLY|os.O_CREATE, 0311)
-		if err != nil {
-			log.Warningf("CertKey backup create failed: %v", err)
-			return
-		}
-		_, err = io.Copy(backup, CertKey)
-		if err != nil {
-			log.Warningf("CertKey backup write failed: %v", err)
-			return
-		}
+	// 备份 CertKey
+	if _Backup(target.CertKey, "CertKey") != nil {
+		return
+	}
+	if _Backup(target.FullchainCerts, "FullchainCerts") != nil {
+		return
 	}
 
-	rollback := func() {
-		backup, err2 := os.OpenFile(target.CertKey+".bak", os.O_RDONLY, 0311)
-		if err2 != nil && os.IsNotExist(err2) {
-			log.Warningf("CertKey backup up not exists, skip rollback.")
-			return
-		}
-		CertKey, err2 := os.OpenFile(target.CertKey+".bak", os.O_WRONLY|os.O_CREATE, 0311)
-		if err2 != nil {
-			log.Warningf("CertKey create failed: %v", err2)
-			return
-		}
-		_, err2 = io.Copy(CertKey, backup)
-		if err2 != nil {
-			log.Warningf("CertKey rollback failed: %v", err)
-		}
+	// 确保备份成功后，尝试写入，失败后尝试回滚
+	if os.WriteFile(target.CertKey, []byte(data.Payload.CertificateCertKey), 0311) != nil {
+		_ = _Rollback(target.CertKey, "CertKey")
+		return
 	}
-
-	FullchainCerts, err := os.OpenFile(target.FullchainCerts, os.O_RDWR, 0311)
-	if err != nil && os.IsNotExist(err) {
-		log.Warningf("Target FullchainCerts not found, create new one...")
-		FullchainCerts, err = os.Create(target.FullchainCerts)
-		if err != nil {
-			log.Warningf("FullchainCerts create failed: %v", err)
-			rollback()
-			return
-		}
-	} else {
-		log.Infof("Backing up old FullchainCerts...")
-		backup, err := os.OpenFile(target.CertKey+".bak", os.O_WRONLY|os.O_CREATE, 0311)
-		if err != nil {
-			log.Warningf("FullchainCerts backup create failed: %v", err)
-			rollback()
-			return
-		}
-		_, err = io.Copy(backup, FullchainCerts)
-		if err != nil {
-			log.Warningf("FullchainCerts backup write failed: %v", err)
-			rollback()
-			return
-		}
+	if os.WriteFile(target.FullchainCerts, []byte(data.Payload.CertificateFullchainCert), 0311) != nil {
+		_ = _Rollback(target.FullchainCerts, "FullchainCerts")
+		return
 	}
+	cmd := exec.Command("nginx", "-s", "reload")
+	err = cmd.Run()
+	if err != nil {
+		log.Warningf("nginx reload failed: %v", err)
+		return
+	}
+	log.Infof("Processing success! domain: %s", data.Payload.CertificateDomain)
 }
 
-func _Backup(path string, flag string) (*os.File, *os.File) {
-	CertKey, err := os.OpenFile(path, os.O_RDWR, 0311)
-	if err != nil && os.IsNotExist(err) {
-		log.Warningf("Target " + flag + " not found, create new one...")
-		CertKey, err = os.Create(path)
-		if err != nil {
-			log.Warningf(flag+" create failed: %v", err)
-			return nil, nil
+func _Backup(path string, flag string) error {
+	origin, err := os.OpenFile(path, os.O_RDWR, 0311)
+	if err != nil {
+		if os.IsNotExist(err) {
+			log.Warningf("Target %s not found, create new one...", flag)
+			origin, err = os.Create(path)
+			if err != nil {
+				log.Warningf("%s create failed: %v", flag, err)
+				return err
+			} else {
+				return nil
+			}
 		} else {
-			return CertKey, nil
+			log.Warningf("Unknown error: %v", err)
+			panic(err)
+			return err
 		}
 	} else {
-		log.Infof("Backing up old " + flag + "...")
+		log.Infof("Backing up old %s...", flag)
 		backup, err := os.OpenFile(path+".bak", os.O_WRONLY|os.O_CREATE, 0311)
 		if err != nil {
 			log.Warningf("CertKey backup create failed: %v", err)
-			return nil, nil
+			return err
 		}
-		_, err = io.Copy(backup, CertKey)
+		_, err = io.Copy(backup, origin)
 		if err != nil {
-			log.Warningf(flag+" backup write failed: %v", err)
-			return nil, nil
+			log.Warningf("%s backup write failed: %v", flag, err)
+			return err
 		}
-		return CertKey, backup
+		return nil
 	}
 }
 
-func _Rollback(path string) error {
-
+func _Rollback(path string, flag string) error {
+	backup, err := os.OpenFile(path+".bak", os.O_RDONLY, 0311)
+	if err != nil {
+		if os.IsNotExist(err) {
+			log.Warningf("Backup %s not found, rollback failed!", flag)
+		} else {
+			log.Warningf("Unknown error: %v", err)
+			panic(err)
+		}
+		return err
+	} else {
+		log.Infof("Rollbacking %s...", flag)
+		origin, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE, 0311)
+		if err != nil {
+			log.Warningf("CertKey backup create failed: %v", err)
+			return err
+		}
+		_, err = io.Copy(backup, origin)
+		if err != nil {
+			log.Warningf("%s rollback write failed: %v", flag, err)
+			return err
+		}
+		return nil
+	}
 }

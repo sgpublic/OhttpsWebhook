@@ -32,6 +32,7 @@ func _SetupFlag() {
 	flag.StringVar(&_ConfigPath, "c", "./config.yaml", "Set the config file (*.yaml) to use.")
 	flag.BoolVar(&_Debug, "d", false, "Enable debug mode.")
 	flag.BoolVar(&_Service, "s", false, "Run on daemon mode")
+	flag.Parse()
 }
 
 func _SetupConfig() {

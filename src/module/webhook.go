@@ -18,7 +18,7 @@ func Setup() {
 	path, listen := config.GetServiceTarget()
 
 	http.HandleFunc(path, _HandleWebhook)
-	log.Infof("Start listen on http://%s%s", listen, path)
+	log.Infof("Starting listen on http://%s%s", listen, path)
 	err := http.ListenAndServe(listen, nil)
 	if err != nil {
 		log.Fatalf("Service start failed: %v", err)

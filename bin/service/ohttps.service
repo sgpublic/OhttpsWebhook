@@ -6,7 +6,7 @@ After=network.target remote-fs.target nss-lookup.target
 User=root
 Group=root
 Type=forking
-ExecStart=/usr/bin/ohttps -c /etc/ohttps.d/config.yaml
+ExecStart=/usr/bin/ohttps -c /etc/ohttps.d/config.yaml -s
 
 [Install]
 WantedBy=multi-user.target

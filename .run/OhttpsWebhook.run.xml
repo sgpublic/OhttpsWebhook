@@ -2,7 +2,6 @@
   <configuration default="false" name="OhttpsWebhook" type="GoApplicationRunConfiguration" factoryName="Go Application">
     <module name="OhttpsWebhook" />
     <working_directory value="$PROJECT_DIR$/bin" />
-    <parameters value="-s" />
     <kind value="PACKAGE" />
     <package value="OhttpsWebhook" />
     <directory value="$PROJECT_DIR$" />

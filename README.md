@@ -34,3 +34,4 @@ ohttps -c /etc/ohttps.d/config.yaml
 
 或者（仅在 `Ubuntu` 完成测试）将 [ohttps.service](https://github.com/sgpublic/OhttpsWebhook/blob/master/bin/service/ohttps.service) 文件保存到 `/usr/lib/systemd/system` 目录下，使用 `systemctl` 启动服务（需将配置文件存到 `/etc/ohttps.d/config.yaml`）。
 
+添加 `-s` 参数可以服务模式运行。

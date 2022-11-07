@@ -1,2 +1,3 @@
-/bin/**
-/vender/**
+/bin/
+/vender/
+/.idea/

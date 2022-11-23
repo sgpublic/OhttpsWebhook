@@ -97,14 +97,14 @@ func _Process(data Ohttps) {
 
 		// 确保备份成功后，尝试写入，失败后尝试回滚
 		log.Infof("Writting new CertKey... (domain: %s)", domain)
-		err = os.WriteFile(target.CertKey, []byte(data.Payload.CertificateCertKey), 0311)
+		err = os.WriteFile(target.CertKey, []byte(data.Payload.CertificateCertKey), 0644)
 		if err != nil {
 			log.Warningf("CertKey writing failed (domain: %s): %v", domain, err)
 			_ = _Rollback(target.CertKey, "CertKey")
 			return
 		}
 		log.Infof("Writting new FullchainCerts... (domain: %s)", domain)
-		err = os.WriteFile(target.FullchainCerts, []byte(data.Payload.CertificateFullchainCert), 0311)
+		err = os.WriteFile(target.FullchainCerts, []byte(data.Payload.CertificateFullchainCert), 0644)
 		if err != nil {
 			log.Warningf("FullchainCerts writing failed (domain: %s): %v", domain, err)
 			_ = _Rollback(target.FullchainCerts, "FullchainCerts")
@@ -122,7 +122,7 @@ func _Process(data Ohttps) {
 
 func _Backup(path string, flag string, domain string) error {
 	log.Infof("Backing up %s... (domain: %s)", flag, domain)
-	origin, err := os.OpenFile(path, os.O_RDWR, 0311)
+	origin, err := os.OpenFile(path, os.O_RDWR, 0644)
 	if err != nil {
 		if os.IsNotExist(err) {
 			log.Warningf("Target %s not found, create new one... (domain: %s)", flag, domain)
@@ -139,7 +139,7 @@ func _Backup(path string, flag string, domain string) error {
 			return err
 		}
 	} else {
-		backup, err := os.OpenFile(path+".bak", os.O_WRONLY|os.O_CREATE, 0311)
+		backup, err := os.OpenFile(path+".bak", os.O_WRONLY|os.O_CREATE, 0644)
 		if err != nil {
 			log.Warningf("CertKey backup create failed (domain: %s): %v", domain, err)
 			return err
@@ -155,7 +155,7 @@ func _Backup(path string, flag string, domain string) error {
 
 func _Rollback(path string, flag string) error {
 	log.Infof("Rollbacking %s...", flag)
-	backup, err := os.OpenFile(path+".bak", os.O_RDONLY, 0311)
+	backup, err := os.OpenFile(path+".bak", os.O_RDONLY, 0644)
 	if err != nil {
 		if os.IsNotExist(err) {
 			log.Warningf("Backup %s not found, rollback failed!", flag)
@@ -166,7 +166,7 @@ func _Rollback(path string, flag string) error {
 		return err
 	} else {
 		log.Infof("Rollbacking %s...", flag)
-		origin, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE, 0311)
+		origin, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE, 0644)
 		if err != nil {
 			log.Warningf("CertKey backup create failed: %v", err)
 			return err

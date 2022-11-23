@@ -69,10 +69,7 @@ jobs:
           tag: ${{ github.ref }}
           overwrite: true
           file_glob: true
-  clean:
-    name: Clean up
-    runs-on: ubuntu-latest
-    steps:
+
       - name: Delete workflow runs
         uses: GitRML/delete-workflow-runs@main
         with:

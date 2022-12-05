@@ -17,6 +17,7 @@ config:
   logging:
     path: "/var/log/ohttps/" # 日志输出目录，默认为 ./log
     aging: 259200 # 日志保留期限，单位：秒，默认为 259200
+  nginx-reload-command: "nginx -s reload" # 设置 nginx 重新加载命令，默认为 nginx -s reload
 targets:
   - domain: "*.example1.com" # 证书域名
     cert-key: "/etc/nginx/cert/example1.com.key" # 私钥证书保存路径

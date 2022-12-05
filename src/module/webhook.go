@@ -10,7 +10,6 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"os/exec"
 	"strconv"
 )
 
@@ -111,8 +110,7 @@ func _Process(data Ohttps) {
 			return
 		}
 	}
-	cmd := exec.Command("nginx", "-s", "reload")
-	err := cmd.Run()
+	err := config.GetNginxReloadCommand().Run()
 	if err != nil {
 		log.Warningf("nginx reload failed: %v", err)
 		return
@@ -123,6 +121,8 @@ func _Process(data Ohttps) {
 func _Backup(path string, flag string, domain string) error {
 	log.Infof("Backing up %s... (domain: %s)", flag, domain)
 	origin, err := os.OpenFile(path, os.O_RDWR, 0644)
+	//goland:noinspection GoUnhandledErrorResult
+	defer origin.Close()
 	if err != nil {
 		if os.IsNotExist(err) {
 			log.Warningf("Target %s not found, create new one... (domain: %s)", flag, domain)
@@ -140,6 +140,8 @@ func _Backup(path string, flag string, domain string) error {
 		}
 	} else {
 		backup, err := os.OpenFile(path+".bak", os.O_WRONLY|os.O_CREATE, 0644)
+		//goland:noinspection GoUnhandledErrorResult
+		defer backup.Close()
 		if err != nil {
 			log.Warningf("CertKey backup create failed (domain: %s): %v", domain, err)
 			return err

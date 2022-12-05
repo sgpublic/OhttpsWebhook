@@ -105,6 +105,15 @@ func GetWebhookKey() string {
 	return _ReadConfig().Config.Key
 }
 
+func GetNginxReloadCommand() *exec.Cmd {
+	str := _ReadConfig().Config.NginxReloadCommand
+	if str == "" {
+		return exec.Command("nginx", "-s", "reload")
+	}
+	command := strings.Split(str, " ")
+	return exec.Command(command[0], command[1:]...)
+}
+
 func _ReadConfig() _ConfigRoot {
 	conf := new(_ConfigRoot)
 	yamlFile, err := os.ReadFile(_ConfigPath)
@@ -136,6 +145,7 @@ type _ConfigRoot struct {
 			Path  string `yaml:"path"`
 			Aging int64  `yaml:"aging"`
 		} `yaml:"logging"`
+		NginxReloadCommand string `yaml:"nginx-reload-command"`
 	} `yaml:"config"`
 
 	Targets []Target `yaml:"targets"`

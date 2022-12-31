@@ -5,7 +5,6 @@ import (
 	"flag"
 	rotatelogs "github.com/lestrrat-go/file-rotatelogs"
 	log "github.com/sirupsen/logrus"
-	"gopkg.in/yaml.v3"
 	"os"
 	"os/exec"
 	"path"
@@ -55,7 +54,8 @@ func _SetupConfig() {
 	if aging == 0 {
 		aging = 259200
 	}
-	rotateOptions = append(rotateOptions, rotatelogs.WithMaxAge(time.Duration(aging)))
+	rotateOptions = append(rotateOptions, rotatelogs.WithMaxAge(aging*time.Second))
+	os.MkdirAll(logPath, 0644)
 	w, err := rotatelogs.New(path.Join(logPath, "%Y-%m-%d.log"), rotateOptions...)
 	if err != nil {
 		log.Errorf("rotatelogs init err: %v", err)

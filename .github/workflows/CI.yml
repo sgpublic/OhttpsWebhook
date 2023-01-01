@@ -16,6 +16,7 @@ jobs:
     name: Build binary CI
     runs-on: ubuntu-latest
     strategy:
+      max-parallel: 1
       matrix:
         # build and publish in parallel: linux/386, linux/amd64, windows/386, windows/amd64, darwin/amd64, darwin/arm64
         goos: [linux, windows, darwin, end]

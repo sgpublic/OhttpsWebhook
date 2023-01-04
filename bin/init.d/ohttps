@@ -1,0 +1,16 @@
+#!/bin/sh /etc/rc.common
+
+START=99
+STOP=0
+
+stop() {
+    if [ -e "/etc/ohttps/ohttps.pid" ]; then
+        kill -9 $(cat /etc/ohttps.d/ohttps.pid)
+        rm /etc/ohttps/ohttps.pid
+    fi
+}
+
+start() {
+    stop
+    nohup /usr/bin/ohttps -c /etc/ohttps.d/config.yaml >> /dev/null 2>&1 & echo $! > /etc/ohttps.d/ohttps.pid
+}

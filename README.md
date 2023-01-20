@@ -1,5 +1,7 @@
 # OhttpsWebhook
 
+![GitHub all releases](https://img.shields.io/github/downloads/sgpublic/OhttpsWebhook/total) ![GitHub release (latest by date)](https://img.shields.io/github/v/release/sgpublic/OhttpsWebhook) ![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/sgpublic/OhttpsWebhook?include_prereleases)
+
 这是一个基于 Webhook 的、适用于 [ohttps.com](https://ohttps.com/) 的开源自动化部署工具。
 
 ## 食用方法

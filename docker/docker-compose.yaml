@@ -1,6 +1,6 @@
 version: "3"
 services:
-  gotify:
+  ohttps-webhook:
     image: mhmzx/ohttps-webhook:latest
     volumes:
       - /etc/nginx/cert:/etc/nginx/cert
@@ -8,4 +8,3 @@ services:
       - ./log:/app/log
     ports:
       - 8081:8081
-    restart: always

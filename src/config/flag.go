@@ -88,6 +88,12 @@ func Daemon() {
 
 func GetServiceTarget() (string, string) {
 	conf := _ReadConfig()
+	if conf.Hook.Path == "" {
+		conf.Hook.Path = "/ohttps"
+	}
+	if conf.Hook.Listen == "" {
+		conf.Hook.Listen = "0.0.0.0:8081"
+	}
 	return conf.Hook.Path, conf.Hook.Listen
 }
 

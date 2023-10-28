@@ -75,6 +75,34 @@ jobs:
           overwrite: true
           file_glob: true
 
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+        if: matrix.goos == 'linux' && matrix.goarch == 'amd64'
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        if: matrix.goos == 'linux' && matrix.goarch == 'amd64'
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        if: matrix.goos == 'linux' && matrix.goarch == 'amd64'
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Copy bin to docker
+        if: matrix.goos == 'linux' && matrix.goarch == 'amd64'
+        run: "cp -a output/* docker/ohttps-webhook"
+
+      - name: Build docker image
+        uses: docker/build-push-action@v5
+        if: matrix.goos == 'linux' && matrix.goarch == 'amd64'
+        with:
+          context: docker
+          push: false
+          tags: mhmzx/ohttps-webhook:latest,mhmzx/ohttps-webhook:${{ github.ref }}
+
       - name: Delete workflow runs
         uses: GitRML/delete-workflow-runs@main
         if: matrix.goos == 'end' && matrix.goarch == 'end'

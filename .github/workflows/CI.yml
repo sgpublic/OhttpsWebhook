@@ -100,7 +100,7 @@ jobs:
         if: matrix.goos == 'linux' && matrix.goarch == 'amd64'
         with:
           context: docker
-          push: false
+          push: true
           tags: mhmzx/ohttps-webhook:latest,mhmzx/ohttps-webhook:${{ github.ref }}
 
       - name: Delete workflow runs

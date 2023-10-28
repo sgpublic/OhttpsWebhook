@@ -1,0 +1,11 @@
+version: "3"
+services:
+  gotify:
+    image: mhmzx/ohttps-webhook:latest
+    volumes:
+      - /etc/nginx/cert:/etc/nginx/cert
+      - ./config.yaml:/app/config.yaml
+      - ./log:/app/log
+    ports:
+      - 8081:8081
+    restart: always

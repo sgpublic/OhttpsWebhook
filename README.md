@@ -51,6 +51,7 @@ docker run -d \
   -v /etc/nginx/cert:/etc/nginx/cert \
   -v $(pwd)/config.yaml:/app/config.yaml \
   -v $(pwd)/log:/app/log \
+  # -v /var/run/docker.sock:/var/run/docker.sock \ # 使用外部 docker
   -p 8081:8081 \
   mhmzx/ohttps-webhook:latest
 ```
@@ -66,6 +67,9 @@ services:
       - /etc/nginx/cert:/etc/nginx/cert
       - ./config.yaml:/app/config.yaml
       - ./log:/app/log
+      # - /var/run/docker.sock:/var/run/docker.sock # 使用外部 docker
     ports:
       - 8081:8081
 ```
+
+当您使用 docker 启动 ohttps-webhook，且 nginx 在宿主机上使用 docker 运行时，您可以将 `/var/run/docker.sock` 映射到容器内部，`config.nginx-reload-command` 设置为 `docker exec -i <容器名> nginx -s reload`。

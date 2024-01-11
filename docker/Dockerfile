@@ -1,10 +1,6 @@
-FROM debian:bookworm-20230904-slim
+FROM docker:24.0.7-git
 
-RUN sed -i 's/deb.debian.org/mirrors.aliyun.com/' /etc/apt/sources.list.d/*.sources &&\
- apt-get update &&\
- apt-get install curl -y &&\
- curl -fsSL https://get.docker.com | bash &&\
- useradd -m -u 1000 runner &&\
+RUN useradd -m -u 1000 runner &&\
  usermod -aG docker runner &&\
  mkdir -p /app
 

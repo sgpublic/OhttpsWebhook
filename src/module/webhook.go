@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 )
 
 func Setup() {
@@ -69,20 +70,21 @@ type Ohttps struct {
 
 func _Process(data Ohttps) {
 	log.Infof("Processing request, CertID: %s, sign: %s", data.Payload.CertificateName, data.Sign)
+
+	// 校验 sign
+	h := md5.New()
+	h.Write([]byte(strconv.Itoa(data.Timestamp) + ":" + config.GetWebhookKey()))
+	sign := hex.EncodeToString(h.Sum(nil))
+	if data.Sign != sign {
+		log.Warning("Sign mismatch!")
+		return
+	}
+
 	for _, domain := range data.Payload.CertificateDomains {
 		log.Infof("Processing domain: %s", domain)
 		target, err := config.GetTarget(domain)
 		if err != nil {
 			log.Warningf("Error occupied during the process (domain: %s): %v", domain, err)
-			return
-		}
-
-		// 校验 sign
-		h := md5.New()
-		h.Write([]byte(strconv.Itoa(data.Timestamp) + ":" + config.GetWebhookKey()))
-		sign := hex.EncodeToString(h.Sum(nil))
-		if data.Sign != sign {
-			log.Warningf("Sign mismatch! domain: %s", domain)
 			return
 		}
 
@@ -110,12 +112,21 @@ func _Process(data Ohttps) {
 			return
 		}
 	}
-	err := config.GetNginxReloadCommand().Run()
+	command := config.GetNginxReloadCommand()
+	result, err := command.CombinedOutput()
+	if result != nil {
+		strResult := strings.Split(string(result), "\n")
+		for _, line := range strResult {
+			if len(strings.TrimSpace(line)) > 0 {
+				log.Debugf("nginx reload result:   %s", line)
+			}
+		}
+	}
 	if err != nil {
 		log.Warningf("nginx reload failed: %v", err)
-		return
+	} else {
+		log.Infof("Processing success! CertID: %s", data.Payload.CertificateName)
 	}
-	log.Infof("Processing success! CertID: %s", data.Payload.CertificateName)
 }
 
 func _Backup(path string, flag string, domain string) error {

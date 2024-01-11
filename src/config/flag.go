@@ -115,8 +115,9 @@ func GetWebhookKey() string {
 func GetNginxReloadCommand() *exec.Cmd {
 	str := _ReadConfig().Config.NginxReloadCommand
 	if str == "" {
-		return exec.Command("nginx", "-s", "reload")
+		str = "nginx -s reload"
 	}
+	log.Infof("do reload nginx with: %s", str)
 	command := strings.Split(str, " ")
 	return exec.Command(command[0], command[1:]...)
 }

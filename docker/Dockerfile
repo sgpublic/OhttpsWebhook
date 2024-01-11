@@ -1,13 +1,15 @@
 FROM docker:24.0.7-git
 
-RUN useradd -m -u 1000 runner &&\
- usermod -aG docker runner &&\
- mkdir -p /app
-
 COPY ohttps-webhook /app/ohttps-webhook
-RUN chown -R runner:runner /app
+
+RUN addgroup -S runner -g 1000 &&\
+ addgroup -S runner-docker -g 997 &&\
+ adduser -S runner -G runner -u 1000 &&\
+ addgroup runner runner-docker &&\
+ mkdir -p /app &&\
+ chown -R runner:runner /app
 
 USER runner
 
 WORKDIR /app
-ENTRYPOINT ["/app/ohttps-webhook"]
+ENTRYPOINT ["sh", "-c", "/app/ohttps-webhook"]

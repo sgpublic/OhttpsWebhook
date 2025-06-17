@@ -1,15 +1,12 @@
-FROM docker:24.0.7-git
+FROM jlesage/baseimage:debian-12-v3
 
-COPY ohttps-webhook /app/ohttps-webhook
+RUN apt-get update &&\
+ apt-get install -y curl &&\
+ curl -fsSL https://get.docker.com | bash &&\
+ apt-get autoclean
 
-RUN addgroup -S runner -g 1000 &&\
- addgroup -S runner-docker -g 997 &&\
- adduser -S runner -G runner -u 1000 &&\
- addgroup runner runner-docker &&\
- mkdir -p /app &&\
- chown -R runner:runner /app
+COPY ./rootf /
 
-USER runner
-
-WORKDIR /app
-ENTRYPOINT ["sh", "-c", "/app/ohttps-webhook"]
+ENV APP_NAME=ohttps-webhook
+ARG APP_VERSION
+ENV APP_VERSION=${APP_VERSION}

@@ -53,7 +53,7 @@ docker run -d \
   -v $(pwd)/log:/app/log \
   # -v /var/run/docker.sock:/var/run/docker.sock \ # 使用外部 docker
   -p 8081:8081 \
-  -e DOCKER_GROUP_ID=994 # 设置外部 docker 的用户组 id
+  -e SUP_GROUP_IDS=994 # 设置外部 docker 的用户组 id
   mhmzx/ohttps-webhook:latest
 ```
 
@@ -71,7 +71,7 @@ services:
     ports:
       - 8081:8081
     environment:
-      DOCKER_GROUP_ID: 994 # 设置外部 docker 的用户组 id
+      SUP_GROUP_IDS: 994 # 设置外部 docker 的用户组 id
 ```
 
 外部 docker 的用户组 id 可使用 `getent group docker` 查看。
